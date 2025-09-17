@@ -24,7 +24,7 @@ const defaultIcon = new L.Icon({
 
 function App() {
   let { location } = useParams();
-  const dms = location || `29°41'18.3"N 98°31'08.6"W`;
+  const dms = location || `40°38'57.3"N 73°53'42.8"W`;
 
   const getInitialCenter = () => {
     try {
