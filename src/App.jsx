@@ -90,9 +90,7 @@ function App() {
             <Popup>
               <b>{satellite.satname}</b>
               <br />
-              Latitude: {satellite.satlat}
-              <br />
-              Longitude: {satellite.satlng}
+              Launched {satellite.launchDate}
               <br />
               Altitude: {satellite.satalt} km
             </Popup>
