@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Marker, Popup } from 'react-leaflet';
+import { Marker, Popup, useMap } from 'react-leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import L from 'leaflet';
 
@@ -25,6 +25,8 @@ const SatelliteMarker = ({ satellite, onAnimationComplete }) => {
   const [currentPos, setCurrentPos] = useState([satellite.satlat, satellite.satlng]);
   const [rotation, setRotation] = useState(0);
   const markerRadius = 35;
+  const animationFrameId = React.useRef(null);
+  const map = useMap();
 
   useEffect(() => {
     let animationInterval;
@@ -37,24 +39,46 @@ const SatelliteMarker = ({ satellite, onAnimationComplete }) => {
 
         if (positions && positions.length > 0) {
           let positionIndex = 0;
-          animationInterval = setInterval(() => {
-            if (positionIndex < positions.length) {
-              const { satlatitude: currentLat, satlongitude: currentLng } = positions[positionIndex];
-              setCurrentPos([currentLat, currentLng]);
+          const stepDuration = 40000 / positions.length;
 
-              if (positionIndex + 1 < positions.length) {
-                const { satlatitude: nextLat, satlongitude: nextLng } = positions[positionIndex + 1];
-                const angle = calculateBearing(currentLat, currentLng, nextLat, nextLng);
-                setRotation(angle);
-              }
-              positionIndex++;
-            } else {
+          const animateNextStep = () => {
+            if (positionIndex >= positions.length - 1) {
               clearInterval(animationInterval);
               if (onAnimationComplete) {
                 onAnimationComplete();
               }
+              return;
             }
-          }, 40000 / positions.length);
+
+            const startPos = [positions[positionIndex].satlatitude, positions[positionIndex].satlongitude];
+            const endPos = [positions[positionIndex + 1].satlatitude, positions[positionIndex + 1].satlongitude];
+            
+            const angle = calculateBearing(startPos[0], startPos[1], endPos[0], endPos[1]);
+            setRotation(angle);
+
+            const startTime = performance.now();
+
+            const animationLoop = (currentTime) => {
+              const elapsedTime = currentTime - startTime;
+              const progress = Math.min(elapsedTime / stepDuration, 1);
+
+              const lat = startPos[0] + (endPos[0] - startPos[0]) * progress;
+              const lng = startPos[1] + (endPos[1] - startPos[1]) * progress;
+
+              setCurrentPos([lat, lng]);
+
+              if (progress < 1) {
+                animationFrameId.current = requestAnimationFrame(animationLoop);
+              } else {
+                positionIndex++;
+              }
+            };
+
+            animationFrameId.current = requestAnimationFrame(animationLoop);
+          };
+
+          animateNextStep();
+          animationInterval = setInterval(animateNextStep, stepDuration);
         }
       } catch (error) {
         console.error('Error fetching satellite positions:', error);
@@ -64,6 +88,9 @@ const SatelliteMarker = ({ satellite, onAnimationComplete }) => {
     fetchSatellitePositions();
 
     return () => {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
       clearInterval(animationInterval);
     };
   }, [satellite.satid, onAnimationComplete]);

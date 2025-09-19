@@ -35,13 +35,14 @@ function App() {
 
   const fetchSatellites = useCallback(() => {
     const radius = 12;
+    console.log("Fetching new data")
     fetch(
       `${apiUrl}/satellites-above?dms=${encodeURIComponent(dms)}&radius=${radius}`
     )
       .then((response) => response.json())
       .then((data) => {
         setSatellites(data.above);
-        console.log(data.info.transactionscount);
+        console.log(`Used ${data.info.transactionscount} / 100 available transactions for /above`);
       })
       .catch((error) => console.error("Error fetching satellite data:", error));
   }, [dms]);
