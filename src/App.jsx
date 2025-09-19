@@ -14,25 +14,28 @@ const eInkStyles = `
 `;
 
 const SatelliteMarker = ({ satellite }) => {
+  const markerRadius = 35;
   const iconMarkup = renderToStaticMarkup(
     <svg xmlns="http://www.w3.org/2000/svg">
-      <circle cx="35" cy="35" r="35" fill="white" stroke="black" strokeWidth="2" />
-      <circle cx="35" cy="35" r="20" fill="black" />
+      <circle cx={markerRadius} cy={markerRadius} r={markerRadius} fill="white" stroke="black" strokeWidth="2" />
+      <circle cx={markerRadius} cy={markerRadius} r={markerRadius * .55} fill="black" />
       <def>
-        <path id="text-path" d="M 10,35 a 25,25 0 1,1 50,0 a 25,25 0 1,1 -50,0" transform="rotate(180) scale(.7, .7)" />
+        <path id="text-path" d="M 10,35 a 25,25 0 1,1 50,0 a 25,25 0 1,1 -50,0" transform="scale(.6, .6)" />
       </def>
-      <text fontFamily="monospace" fontSize="12" fill="black" fontWeight={700}>
-        <textPath href="#text-path" startOffset="50%" textAnchor="center">
+      <text fontFamily="monospace" fontSize="12" fill="black" fontWeight="700">
+        <textPath href="#text-path">
           {satellite.satname}
         </textPath>
       </text>
+      <text x={markerRadius} y={markerRadius} textAnchor="middle" dominantBaseline="middle" fontSize="20">🛰️</text>
+
     </svg>
   );
   
   const customIcon = new L.DivIcon({
     html: iconMarkup,
     className: "dummy", // needed
-    iconSize: [35, 35]
+    iconSize: [markerRadius, markerRadius]
   });
   
   return (
