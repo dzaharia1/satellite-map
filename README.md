@@ -21,4 +21,4 @@ The `<DMS_COORDINATES>` parameter should be a URL-encoded string representing th
 **Example URL-encoded DMS:** `40%C2%B038'57.3%22N%2073%C2%B053'42.8%22W`
 
 **Full Example URL:**
-https://satellite-map.danmade.app/40%C2%B038'57.3%22N%2073%C2%B053'42.8%22W
+https://satellite-map.adanmade.app/40%C2%B038'57.3%22N%2073%C2%B053'42.8%22W
