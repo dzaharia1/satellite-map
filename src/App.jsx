@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -6,7 +6,7 @@ import { convertDmsToDecimal } from "./coordinates.js";
 import SatelliteMarker from "./components/SatelliteMarker.jsx";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
- 
+
 // E-ink styles
 const eInkStyles = `
 // .leaflet-tile-pane {
@@ -15,8 +15,6 @@ const eInkStyles = `
 `;
 
 const apiUrl = import.meta.env.VITE_API_URL;
-
-
 
 function App() {
   let { location } = useParams();
@@ -35,23 +33,20 @@ function App() {
   const [satellites, setSatellites] = useState([]);
   const [mapCenter, setMapCenter] = useState(getInitialCenter);
 
-  console.log(mapCenter);
+  const fetchSatellites = useCallback(() => {
+    const radius = 12;
+    fetch(
+      `${apiUrl}/satellites-above?dms=${encodeURIComponent(dms)}&radius=${radius}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setSatellites(data.above);
+        console.log(data.info.transactionscount);
+      })
+      .catch((error) => console.error("Error fetching satellite data:", error));
+  }, [dms]);
 
   useEffect(() => {
-    const radius = 12;
-
-    const fetchSatellites = () => {
-      fetch(
-        `${apiUrl}/satellites-above?dms=${encodeURIComponent(dms)}&radius=${radius}`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          setSatellites(data.above);
-          console.log(data.info.transactionscount);
-        })
-        .catch((error) => console.error("Error fetching satellite data:", error));
-    };
-
     try {
       const { latitude, longitude } = convertDmsToDecimal(dms);
       setMapCenter([latitude, longitude]);
@@ -61,10 +56,7 @@ function App() {
     }
 
     fetchSatellites();
-    const intervalId = setInterval(fetchSatellites, 36000);
-
-    return () => clearInterval(intervalId);
-  }, [location]);
+  }, [location, fetchSatellites, dms]);
 
   return (
     <>
@@ -79,10 +71,13 @@ function App() {
           attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &amp; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
         />
         {satellites &&
-          satellites.map((satellite) => (
-            <SatelliteMarker key={satellite.satid} satellite={satellite} />
-          ))
-        }
+          satellites.map((satellite, index) => (
+            <SatelliteMarker
+              key={satellite.satid}
+              satellite={satellite}
+              onAnimationComplete={index === 0 ? fetchSatellites : null}
+            />
+          ))}
       </MapContainer>
     </>
   );

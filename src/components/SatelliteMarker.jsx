@@ -1,10 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Marker, Popup } from 'react-leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import L from 'leaflet';
 
-const SatelliteMarker = ({ satellite }) => {
+const SatelliteMarker = ({ satellite, onAnimationComplete }) => {
+  const [currentPos, setCurrentPos] = useState([satellite.satlat, satellite.satlng]);
   const markerRadius = 35;
+
+  useEffect(() => {
+    let animationInterval;
+
+    const fetchSatellitePositions = async () => {
+      try {
+        const response = await fetch(`https://space-api.danmade.app/satellite-positions?satid=${satellite.satid}`);
+        const data = await response.json();
+        const positions = data.positions;
+
+        if (positions && positions.length > 0) {
+          let positionIndex = 0;
+          animationInterval = setInterval(() => {
+            if (positionIndex < positions.length) {
+              const { satlatitude, satlongitude } = positions[positionIndex];
+              setCurrentPos([satlatitude, satlongitude]);
+              positionIndex++;
+            } else {
+              clearInterval(animationInterval);
+              if (onAnimationComplete) {
+                onAnimationComplete();
+              }
+            }
+          }, 40000 / positions.length);
+        }
+      } catch (error) {
+        console.error('Error fetching satellite positions:', error);
+      }
+    };
+
+    fetchSatellitePositions();
+
+    return () => {
+      clearInterval(animationInterval);
+    };
+  }, [satellite.satid, onAnimationComplete]);
+
   const iconMarkup = renderToStaticMarkup(
     <svg width={markerRadius * 2} height={markerRadius * 2} xmlns="http://www.w3.org/2000/svg">
       <circle cx={markerRadius} cy={markerRadius} r={markerRadius} fill="white" stroke="black" strokeWidth="2" />
@@ -29,7 +67,7 @@ const SatelliteMarker = ({ satellite }) => {
   });
 
   return (
-    <Marker position={[satellite.satlat, satellite.satlng]} icon={customIcon}>
+    <Marker position={currentPos} icon={customIcon}>
       <Popup>
         <b>{satellite.satname}</b>
         <br />
