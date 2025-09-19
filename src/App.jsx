@@ -13,6 +13,8 @@ const eInkStyles = `
 // }
 `;
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 const SatelliteMarker = ({ satellite }) => {
   const markerRadius = 35;
   const iconMarkup = renderToStaticMarkup(
@@ -77,7 +79,7 @@ function App() {
 
     const fetchSatellites = () => {
       fetch(
-        `https://space-api.adanmade.app/satellites-above?dms=${encodeURIComponent(dms)}&radius=${radius}`
+        `${apiUrl}/satellites-above?dms=${encodeURIComponent(dms)}&radius=${radius}`
       )
         .then((response) => response.json())
         .then((data) => {
@@ -96,7 +98,7 @@ function App() {
     }
 
     fetchSatellites();
-    const intervalId = setInterval(fetchSatellites, 1000);
+    const intervalId = setInterval(fetchSatellites, 36000);
 
     return () => clearInterval(intervalId);
   }, [location]);
@@ -110,12 +112,14 @@ function App() {
         style={{ height: "100vh", width: "100%" }}
       >
         <TileLayer
-          url="https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}{r}.png"
+          url="https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &amp; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
         />
-        {satellites.map((satellite) => (
-          <SatelliteMarker key={satellite.satid} satellite={satellite} />
-        ))}
+        {satellites &&
+          satellites.map((satellite) => (
+            <SatelliteMarker key={satellite.satid} satellite={satellite} />
+          ))
+        }
       </MapContainer>
     </>
   );
