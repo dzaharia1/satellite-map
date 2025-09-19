@@ -82,6 +82,7 @@ function App() {
         .then((response) => response.json())
         .then((data) => {
           setSatellites(data.above);
+          console.log(data.info.transactionscount);
         })
         .catch((error) => console.error("Error fetching satellite data:", error));
     };
@@ -95,7 +96,7 @@ function App() {
     }
 
     fetchSatellites();
-    const intervalId = setInterval(fetchSatellites, 30000);
+    const intervalId = setInterval(fetchSatellites, 1000);
 
     return () => clearInterval(intervalId);
   }, [location]);
@@ -110,7 +111,7 @@ function App() {
       >
         <TileLayer
           url="https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &amp; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
+          // attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &amp; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
         />
         {satellites.map((satellite) => (
           <SatelliteMarker key={satellite.satid} satellite={satellite} />
