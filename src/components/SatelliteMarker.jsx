@@ -39,7 +39,7 @@ const SatelliteMarker = ({ satellite, onAnimationComplete }) => {
 
         if (positions && positions.length > 0) {
           let positionIndex = 0;
-          const stepDuration = 40000 / positions.length;
+          const stepDuration = 60000 / positions.length;
 
           const animateNextStep = () => {
             if (positionIndex >= positions.length - 1) {
