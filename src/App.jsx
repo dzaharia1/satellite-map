@@ -34,7 +34,7 @@ function App() {
   const [mapCenter, setMapCenter] = useState(getInitialCenter);
 
   const fetchSatellites = useCallback(() => {
-    const radius = 12;
+    const radius = 20;
     console.log("Fetching new data")
     fetch(
       `${apiUrl}/satellites-above?dms=${encodeURIComponent(dms)}&radius=${radius}`
