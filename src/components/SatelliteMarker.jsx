@@ -21,7 +21,7 @@ const calculateBearing = (lat1, lon1, lat2, lon2) => {
     return (brng + 360) % 360;
 };
 
-const SatelliteMarker = ({ satellite, onAnimationComplete }) => {
+const SatelliteMarker = ({ satellite, noAnimate, onAnimationComplete }) => {
   const [currentPos, setCurrentPos] = useState([satellite.satlat, satellite.satlng]);
   const [rotation, setRotation] = useState(0);
   const markerRadius = 35;
@@ -30,6 +30,11 @@ const SatelliteMarker = ({ satellite, onAnimationComplete }) => {
 
   useEffect(() => {
     let animationInterval;
+
+    if (noAnimate) {
+      setCurrentPos([satellite.satlat, satellite.satlng]);
+      return;
+    }
 
     const fetchSatellitePositions = async () => {
       try {

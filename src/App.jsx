@@ -18,6 +18,10 @@ const apiUrl = import.meta.env.VITE_API_URL;
 
 function App() {
   let { location } = useParams();
+  const noAnimate = location && location.includes("no-animate");
+  if (noAnimate) {
+    location = null;
+  }
   const dms = location || `40°38'57.3"N 73°53'42.8"W`;
 
   const getInitialCenter = () => {
@@ -77,6 +81,7 @@ function App() {
               key={satellite.satid}
               satellite={satellite}
               onAnimationComplete={index === 0 ? fetchSatellites : null}
+              noAnimate={noAnimate}
             />
           ))}
       </MapContainer>
