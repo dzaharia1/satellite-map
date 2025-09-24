@@ -101,12 +101,12 @@ const SatelliteMarker = ({ satellite, noAnimate, onAnimationComplete }) => {
   }, [satellite.satid, onAnimationComplete]);
 
   const iconMarkup = renderToStaticMarkup(
-    <svg width={markerRadius * 2} height={markerRadius * 2} xmlns="http://www.w3.org/2000/svg">
-      <circle cx={markerRadius} cy={markerRadius} r={markerRadius} fill="white" stroke="black" strokeWidth="2" />
-      <circle cx={markerRadius} cy={markerRadius} r={markerRadius * .55} fill="black" />
+    <svg width={markerRadius * 2 + 2} height={markerRadius * 2 + 2} xmlns="http://www.w3.org/2000/svg">
+      <circle cx={markerRadius + 1} cy={markerRadius + 1} r={markerRadius} fill="white" stroke="black" strokeWidth="2" />
+      <circle cx={markerRadius + 1} cy={markerRadius + 1} r={markerRadius * .55} fill="black" />
       <def>
         <g id="direction-arrow">
-            <path d={`M ${markerRadius},${markerRadius - 18} L ${markerRadius - 4},${markerRadius - 8} L ${markerRadius + 4},${markerRadius - 8} Z`} fill="white" />
+          <path d={`M ${markerRadius},${markerRadius - 18} L ${markerRadius - 4},${markerRadius - 8} L ${markerRadius + 4},${markerRadius - 8} Z`} fill="white" />
         </g>
         <path id="text-path" d="M 10,35 a 25,25 0 1,1 50,0 a 25,25 0 1,1 -50,0" transform="scale(.6, .6)" />
       </def>
