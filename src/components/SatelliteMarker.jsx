@@ -21,7 +21,7 @@ const calculateBearing = (lat1, lon1, lat2, lon2) => {
     return (brng + 360) % 360;
 };
 
-const SatelliteMarker = ({ satellite, noAnimate, onAnimationComplete }) => {
+const SatelliteMarker = ({ satellite, noAnimate, fetchInterval }) => {
   const [currentPos, setCurrentPos] = useState([satellite.satlat, satellite.satlng]);
   const [rotation, setRotation] = useState(0);
   const markerRadius = 35;
@@ -44,14 +44,11 @@ const SatelliteMarker = ({ satellite, noAnimate, onAnimationComplete }) => {
 
         if (positions && positions.length > 0) {
           let positionIndex = 0;
-          const stepDuration = 60000 / positions.length;
+          const stepDuration = fetchInterval / positions.length;
 
           const animateNextStep = () => {
             if (positionIndex >= positions.length - 1) {
               clearInterval(animationInterval);
-              if (onAnimationComplete) {
-                onAnimationComplete();
-              }
               return;
             }
 
@@ -98,7 +95,7 @@ const SatelliteMarker = ({ satellite, noAnimate, onAnimationComplete }) => {
       }
       clearInterval(animationInterval);
     };
-  }, [satellite.satid, onAnimationComplete]);
+  }, [satellite.satid]);
 
   const iconMarkup = renderToStaticMarkup(
     <svg width={markerRadius * 2 + 2} height={markerRadius * 2 + 2} xmlns="http://www.w3.org/2000/svg">

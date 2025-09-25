@@ -36,22 +36,22 @@ function App() {
 
   const [satellites, setSatellites] = useState([]);
   const [mapCenter, setMapCenter] = useState(getInitialCenter);
-
-  const fetchSatellites = useCallback(() => {
-    const radius = 20;
-    console.log("Fetching new data")
-    fetch(
-      `${apiUrl}/satellites-above?dms=${encodeURIComponent(dms)}&radius=${radius}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        setSatellites(data.above);
-        console.log(`Used ${data.info.transactionscount} / 100 available transactions for /above`);
-      })
-      .catch((error) => console.error("Error fetching satellite data:", error));
-  }, [dms]);
+  const fetchInterval = 61000;
 
   useEffect(() => {
+    const fetchSatellites = () => {
+      const radius = 20;
+      console.log("Fetching new data");
+      setSatellites([]);
+      fetch(`${apiUrl}/satellites-above?dms=${encodeURIComponent(dms)}&radius=${radius}`)
+        .then((response) => response.json())
+        .then((data) => {
+          setSatellites(data.above);
+          console.log(`Fetch returned ${data.above.length} sats.\nUsed ${data.info.transactionscount} / 100 available transactions for /above`);
+        })
+        .catch((error) => console.error("Error fetching satellite data:", error));
+    };
+    
     try {
       const { latitude, longitude } = convertDmsToDecimal(dms);
       setMapCenter([latitude, longitude]);
@@ -60,8 +60,11 @@ function App() {
       setMapCenter([0, 0]); // Fallback on error
     }
 
-    fetchSatellites();
-  }, [location, fetchSatellites, dms]);
+    fetchSatellites(); // Initial fetch
+    const intervalId = setInterval(fetchSatellites, fetchInterval);
+
+    return () => clearInterval(intervalId);
+  }, [dms]);
 
   return (
     <>
@@ -80,8 +83,8 @@ function App() {
             <SatelliteMarker
               key={satellite.satid}
               satellite={satellite}
-              onAnimationComplete={index === 0 ? fetchSatellites : null}
               noAnimate={noAnimate}
+              fetchInterval={fetchInterval}
             />
           ))}
       </MapContainer>
