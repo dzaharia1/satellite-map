@@ -31,11 +31,6 @@ const SatelliteMarker = ({ satellite, noAnimate, fetchInterval }) => {
   useEffect(() => {
     let animationInterval;
 
-    if (noAnimate) {
-      setCurrentPos([satellite.satlat, satellite.satlng]);
-      return;
-    }
-
     const fetchSatellitePositions = async () => {
       try {
         const response = await fetch(`https://space-api.danmade.app/satellite-positions?satid=${satellite.satid}`);
@@ -43,6 +38,16 @@ const SatelliteMarker = ({ satellite, noAnimate, fetchInterval }) => {
         const positions = data.positions;
 
         if (positions && positions.length > 0) {
+          if (noAnimate) {
+            setCurrentPos([satellite.satlat, satellite.satlng]);
+            if (positions.length > 1) {
+              const startPos = [positions[0].satlatitude, positions[0].satlongitude];
+              const endPos = [positions[1].satlatitude, positions[1].satlongitude];
+              const angle = calculateBearing(startPos[0], startPos[1], endPos[0], endPos[1]);
+              setRotation(angle);
+            }
+            return;
+          }
           let positionIndex = 0;
           const stepDuration = fetchInterval / positions.length;
 
@@ -95,7 +100,7 @@ const SatelliteMarker = ({ satellite, noAnimate, fetchInterval }) => {
       }
       clearInterval(animationInterval);
     };
-  }, [satellite.satid]);
+  }, [satellite.satid, satellite.satlat, satellite.satlng, noAnimate, fetchInterval]);
 
   const iconMarkup = renderToStaticMarkup(
     <svg width={markerRadius * 2 + 2} height={markerRadius * 2 + 2} xmlns="http://www.w3.org/2000/svg">
