@@ -73,6 +73,7 @@ function App() {
         center={mapCenter}
         zoom={7}
         style={{ height: "100vh", width: "100%" }}
+        zoomControl={!noAnimate}
       >
         <TileLayer
           url="https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}{r}.png"
