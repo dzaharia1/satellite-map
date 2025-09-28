@@ -40,7 +40,7 @@ function App() {
 
   useEffect(() => {
     const fetchSatellites = () => {
-      const radius = 10;
+      const radius = 15;
       console.log("Fetching new data");
       setSatellites([]);
       fetch(`${apiUrl}/satellites-above?dms=${encodeURIComponent(dms)}&radius=${radius}`)
