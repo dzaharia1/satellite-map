@@ -29,6 +29,12 @@ const SatelliteMarker = ({ satellite, noAnimate, fetchInterval }) => {
   const map = useMap();
 
   useEffect(() => {
+    // Skip fetching satellite positions if noAnimate is true
+    if (noAnimate) {
+      setCurrentPos([satellite.satlat, satellite.satlng]);
+      return;
+    }
+
     let animationInterval;
 
     const fetchSatellitePositions = async () => {
@@ -38,16 +44,6 @@ const SatelliteMarker = ({ satellite, noAnimate, fetchInterval }) => {
         const positions = data.positions;
 
         if (positions && positions.length > 0) {
-          if (noAnimate) {
-            setCurrentPos([satellite.satlat, satellite.satlng]);
-            if (positions.length > 1) {
-              const startPos = [positions[0].satlatitude, positions[0].satlongitude];
-              const endPos = [positions[1].satlatitude, positions[1].satlongitude];
-              const angle = calculateBearing(startPos[0], startPos[1], endPos[0], endPos[1]);
-              setRotation(angle);
-            }
-            return;
-          }
           let positionIndex = 0;
           const stepDuration = fetchInterval / positions.length;
 
@@ -118,7 +114,7 @@ const SatelliteMarker = ({ satellite, noAnimate, fetchInterval }) => {
         </textPath>
       </text>
       <text x={markerRadius} y={markerRadius} textAnchor="middle" dominantBaseline="middle" fontSize="12" fill="white" fontWeight="700">{new Date(satellite.launchDate).getFullYear()}</text>
-      <use href="#direction-arrow" transform={`rotate(${rotation} ${markerRadius} ${markerRadius})`} />
+      {!noAnimate && <use href="#direction-arrow" transform={`rotate(${rotation} ${markerRadius} ${markerRadius})`} />}
     </svg>
   );
 
