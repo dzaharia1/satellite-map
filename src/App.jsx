@@ -6,6 +6,7 @@ import { convertDmsToDecimal } from "./coordinates.js";
 import SatelliteMarker from "./components/SatelliteMarker.jsx";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import UpdateCountdown from "./components/UpdateCountdown.jsx";
 
 // E-ink styles
 const eInkStyles = `
@@ -36,13 +37,16 @@ function App() {
 
   const [satellites, setSatellites] = useState([]);
   const [mapCenter, setMapCenter] = useState(getInitialCenter);
+  const [countdownTimer, setCountdownTimer] = useState("06:01");
   const fetchInterval = 61000;
+  const [lastFetchTime, setLastFetchTime] = useState(Date.now());
 
   useEffect(() => {
     const fetchSatellites = () => {
       const radius = 15;
       console.log("Fetching new data");
       setSatellites([]);
+      setLastFetchTime(Date.now()); // Update the last fetch time
       fetch(`${apiUrl}/satellites-above?dms=${encodeURIComponent(dms)}&radius=${radius}`)
         .then((response) => response.json())
         .then((data) => {
@@ -63,8 +67,28 @@ function App() {
     fetchSatellites(); // Initial fetch
     const intervalId = setInterval(fetchSatellites, fetchInterval);
 
-    return () => clearInterval(intervalId);
-  }, [dms]);
+    const updateCountdown = () => {
+      // Calculate time left until next fetch
+      const now = Date.now();
+      const timeSinceLastFetch = now - lastFetchTime;
+      const timeUntilNextFetch = fetchInterval - timeSinceLastFetch;
+      
+      if (timeUntilNextFetch <= 0) {
+        setCountdownTimer("00:00");
+      } else {
+        const minutes = Math.floor(timeUntilNextFetch / 60000);
+        const seconds = Math.floor((timeUntilNextFetch % 60000) / 1000);
+        setCountdownTimer(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+      }
+    }
+
+    const countdownIntervalId = setInterval(updateCountdown, 1000);
+
+    return () => {
+      clearInterval(intervalId)
+      clearInterval(countdownIntervalId)
+    };
+  }, [dms, lastFetchTime]);
 
   return (
     <>
@@ -89,6 +113,8 @@ function App() {
             />
           ))}
       </MapContainer>
+
+      {!noAnimate && <UpdateCountdown timeUntil={countdownTimer} />}
     </>
   );
 }
