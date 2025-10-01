@@ -95,7 +95,7 @@ function App() {
       <style>{eInkStyles}</style>
       <MapContainer
         center={mapCenter}
-        zoom={8}
+        zoom={7}
         style={{ height: "100vh", width: "100%" }}
         zoomControl={!noAnimate}
       >
