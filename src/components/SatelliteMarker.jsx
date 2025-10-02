@@ -106,14 +106,22 @@ const SatelliteMarker = ({ satellite, noAnimate, fetchInterval }) => {
         <g id="direction-arrow">
           <path d={`M ${markerRadius},${markerRadius - 18} L ${markerRadius - 4},${markerRadius - 8} L ${markerRadius + 4},${markerRadius - 8} Z`} fill="white" />
         </g>
-        <path id="text-path" d="M 10,35 a 25,25 0 1,1 50,0 a 25,25 0 1,1 -50,0" transform="scale(.6, .6)" />
+        <path id="text-path" d="M 13,35 a 22.5,22.5 0 1,1 45,0 a 22.5,22.5 0 1,1 -45,0" />
       </def>
       <text fontFamily="monospace" fontSize="12" fill="black" fontWeight="700">
         <textPath href="#text-path">
           {satellite.satname}
         </textPath>
       </text>
-      <text x={markerRadius} y={markerRadius} textAnchor="middle" dominantBaseline="middle" fontSize="12" fill="white" fontWeight="700">{new Date(satellite.launchDate).getFullYear()}</text>
+      <text
+        x={markerRadius}
+        y={markerRadius}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontSize="12"
+        fill="white"
+        fontWeight="700">{new Date(satellite.launchDate).getFullYear()}
+      </text>
       {!noAnimate && <use href="#direction-arrow" transform={`rotate(${rotation} ${markerRadius} ${markerRadius})`} />}
     </svg>
   );
