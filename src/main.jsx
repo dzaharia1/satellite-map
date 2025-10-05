@@ -6,7 +6,15 @@ import App from "./App.jsx";
 
 const router = createBrowserRouter([
   {
-    path: "/:location?",
+    path: "/",
+    element: <App />,
+  },
+  {
+    path: "/no-animate",
+    element: <App />,
+  },
+  {
+    path: "/*",
     element: <App />,
   },
 ]);

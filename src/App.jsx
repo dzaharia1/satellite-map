@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { renderToStaticMarkup } from "react-dom/server";
 import { convertDmsToDecimal } from "./coordinates.js";
@@ -18,12 +18,35 @@ const eInkStyles = `
 const apiUrl = import.meta.env.VITE_API_URL;
 
 function App() {
-  let { location } = useParams();
-  const noAnimate = location && location.includes("no-animate");
-  if (noAnimate) {
-    location = null;
+  const location = useLocation();
+  const pathname = location.pathname;
+  
+  // Check if the current path ends with "no-animate"
+  const noAnimate = pathname.endsWith("/no-animate");
+  
+  // Extract coordinates from pathname
+  let coordinates = null;
+  if (pathname !== "/" && pathname !== "/no-animate") {
+    if (noAnimate) {
+      // Remove "/no-animate" from the end to get coordinates
+      coordinates = pathname.replace("/no-animate", "").substring(1);
+    } else {
+      // The entire pathname (minus leading slash) is coordinates
+      coordinates = pathname.substring(1);
+    }
   }
-  const dms = location || `40°38'57.3"N 73°53'42.8"W`;
+  
+  // Decode URL-encoded coordinates
+  const decodedCoordinates = coordinates ? decodeURIComponent(coordinates) : null;
+  
+  // Use coordinates from URL if available, otherwise use default
+  const dms = decodedCoordinates || `40°38'57.3"N 73°53'42.8"W`;
+  
+  // uncomment to debug
+  // console.log("Pathname:", pathname);
+  // console.log("Raw coordinates:", coordinates);
+  // console.log("Decoded coordinates:", decodedCoordinates);
+  // console.log("No animate:", noAnimate);
 
   const getInitialCenter = () => {
     try {
