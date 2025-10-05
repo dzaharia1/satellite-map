@@ -61,7 +61,7 @@ function App() {
   const [satellites, setSatellites] = useState([]);
   const [mapCenter, setMapCenter] = useState(getInitialCenter);
   const [countdownTimer, setCountdownTimer] = useState("06:01");
-  const fetchInterval = 61000;
+  const fetchInterval = 2 * 60 * 1000; // 2 minutes
   const [lastFetchTime, setLastFetchTime] = useState(Date.now());
 
   useEffect(() => {
