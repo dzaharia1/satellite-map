@@ -3,6 +3,8 @@ import { Marker, Popup, useMap } from 'react-leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import L from 'leaflet';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 const calculateBearing = (lat1, lon1, lat2, lon2) => {
     const toRadians = (deg) => deg * Math.PI / 180;
     const toDegrees = (rad) => rad * 180 / Math.PI;
@@ -21,7 +23,7 @@ const calculateBearing = (lat1, lon1, lat2, lon2) => {
     return (brng + 360) % 360;
 };
 
-const SatelliteMarker = ({ satellite, noAnimate, fetchInterval }) => {
+const SatelliteMarker = ({ satellite, noAnimate, fetchInterval, follow = false, tick }) => {
   const [currentPos, setCurrentPos] = useState([satellite.satlat, satellite.satlng]);
   const [rotation, setRotation] = useState(0);
   const markerRadius = 35;
@@ -39,7 +41,7 @@ const SatelliteMarker = ({ satellite, noAnimate, fetchInterval }) => {
 
     const fetchSatellitePositions = async () => {
       try {
-        const response = await fetch(`https://space-api.danmade.app/satellite-positions?satid=${satellite.satid}`);
+        const response = await fetch(`${apiUrl}/satellite-positions?satid=${satellite.satid}`);
         const data = await response.json();
         const positions = data.positions;
 
@@ -70,6 +72,11 @@ const SatelliteMarker = ({ satellite, noAnimate, fetchInterval }) => {
 
               setCurrentPos([lat, lng]);
 
+              if (follow && !noAnimate) {
+                // Keep map centered on the satellite
+                map.setView([lat, lng]);
+              }
+
               if (progress < 1) {
                 animationFrameId.current = requestAnimationFrame(animationLoop);
               } else {
@@ -96,7 +103,7 @@ const SatelliteMarker = ({ satellite, noAnimate, fetchInterval }) => {
       }
       clearInterval(animationInterval);
     };
-  }, [satellite.satid, satellite.satlat, satellite.satlng, noAnimate, fetchInterval]);
+  }, [satellite.satid, satellite.satlat, satellite.satlng, noAnimate, fetchInterval, follow, tick]);
 
   const iconMarkup = renderToStaticMarkup(
     <svg width={markerRadius * 2 + 2} height={markerRadius * 2 + 2} xmlns="http://www.w3.org/2000/svg">
