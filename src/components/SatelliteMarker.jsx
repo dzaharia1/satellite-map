@@ -141,7 +141,13 @@ const SatelliteMarker = ({ satellite, noAnimate, fetchInterval }) => {
         <br />
         Altitude: {satellite.satalt} km
         <br />
-        <a href={`https://www.n2yo.com/?s=${satellite.satid}&live=1`}>More info</a>
+        <a
+          href={`https://www.google.com/search?q=${encodeURIComponent(
+            satellite.satname
+          )}`}
+        >
+          Google this satellite
+        </a>
       </Popup>
     </Marker>
   );
