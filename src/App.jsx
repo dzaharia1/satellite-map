@@ -1,11 +1,9 @@
-import { useEffect, useState, useCallback } from "react";
-import { useParams, useLocation } from "react-router-dom";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import { renderToStaticMarkup } from "react-dom/server";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { MapContainer, TileLayer } from "react-leaflet";
 import { convertDmsToDecimal } from "./coordinates.js";
 import SatelliteMarker from "./components/SatelliteMarker.jsx";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 import UpdateCountdown from "./components/UpdateCountdown.jsx";
 
 // E-ink styles
@@ -20,13 +18,14 @@ const apiUrl = import.meta.env.VITE_API_URL;
 function App() {
   const location = useLocation();
   const pathname = location.pathname;
+  const isIssRoute = pathname.toLowerCase().startsWith("/iss");
   
   // Check if the current path ends with "no-animate"
   const noAnimate = pathname.endsWith("/no-animate");
   
   // Extract coordinates from pathname
   let coordinates = null;
-  if (pathname !== "/" && pathname !== "/no-animate") {
+  if (!isIssRoute && pathname !== "/" && pathname !== "/no-animate") {
     if (noAnimate) {
       // Remove "/no-animate" from the end to get coordinates
       coordinates = pathname.replace("/no-animate", "").substring(1);
@@ -50,6 +49,9 @@ function App() {
 
   const getInitialCenter = () => {
     try {
+      if (isIssRoute) {
+        return [0, 0];
+      }
       const { latitude, longitude } = convertDmsToDecimal(dms);
       return [latitude, longitude];
     } catch (error) {
@@ -63,8 +65,12 @@ function App() {
   const [countdownTimer, setCountdownTimer] = useState("06:01");
   const fetchInterval = 2 * 60 * 1000; // 2 minutes
   const [lastFetchTime, setLastFetchTime] = useState(Date.now());
+  const [issTick, setIssTick] = useState(0);
 
+  // Non-ISS routes: fetch satellites above provided DMS and keep updating
   useEffect(() => {
+    if (isIssRoute) return;
+
     const fetchSatellites = () => {
       const radius = 15;
       console.log("Fetching new data");
@@ -78,7 +84,7 @@ function App() {
         })
         .catch((error) => console.error("Error fetching satellite data:", error));
     };
-    
+
     try {
       const { latitude, longitude } = convertDmsToDecimal(dms);
       setMapCenter([latitude, longitude]);
@@ -90,12 +96,63 @@ function App() {
     fetchSatellites(); // Initial fetch
     const intervalId = setInterval(fetchSatellites, fetchInterval);
 
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [isIssRoute, dms, fetchInterval]);
+
+  // ISS route: show only ISS (satid 25544). Optionally follow and animate.
+  useEffect(() => {
+    if (!isIssRoute) return;
+
+    let refreshId;
+
+    const fetchIssCurrent = async () => {
+      try {
+        setSatellites([]);
+        setLastFetchTime(Date.now());
+        const response = await fetch(`${apiUrl}/satellite-positions?satid=25544`);
+        const data = await response.json();
+        const first = data?.positions?.[0];
+        if (first) {
+          const iss = {
+            satid: 25544,
+            satname: "ISS (ZARYA)",
+            satlat: first.satlatitude,
+            satlng: first.satlongitude,
+            satalt: first.sataltitude ?? first.satalt,
+            launchDate: "1998-11-20T00:00:00Z",
+          };
+          setSatellites([iss]);
+          setMapCenter([iss.satlat, iss.satlng]);
+        }
+      } catch (e) {
+        console.error("Error fetching ISS position:", e);
+      }
+    };
+
+    // Always fetch once to seed initial marker and center
+    fetchIssCurrent();
+
+    // When animating, refresh the ISS track on an interval to continue following
+    if (!noAnimate) {
+      refreshId = setInterval(() => {
+        setIssTick((t) => t + 1);
+        setLastFetchTime(Date.now());
+      }, fetchInterval);
+    }
+
+    return () => {
+      if (refreshId) clearInterval(refreshId);
+    };
+  }, [isIssRoute, noAnimate, fetchInterval]);
+
+  // Countdown display: update every second based on lastFetchTime
+  useEffect(() => {
     const updateCountdown = () => {
-      // Calculate time left until next fetch
       const now = Date.now();
       const timeSinceLastFetch = now - lastFetchTime;
       const timeUntilNextFetch = fetchInterval - timeSinceLastFetch;
-      
       if (timeUntilNextFetch <= 0) {
         setCountdownTimer("00:00");
       } else {
@@ -103,15 +160,11 @@ function App() {
         const seconds = Math.floor((timeUntilNextFetch % 60000) / 1000);
         setCountdownTimer(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
       }
-    }
+    };
 
     const countdownIntervalId = setInterval(updateCountdown, 1000);
-
-    return () => {
-      clearInterval(intervalId)
-      clearInterval(countdownIntervalId)
-    };
-  }, [dms, lastFetchTime]);
+    return () => clearInterval(countdownIntervalId);
+  }, [lastFetchTime, fetchInterval]);
 
   return (
     <>
@@ -127,12 +180,14 @@ function App() {
           attribution={!noAnimate && '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &amp; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'}
         />
         {satellites &&
-          satellites.map((satellite, index) => (
+          satellites.map((satellite) => (
             <SatelliteMarker
               key={satellite.satid}
               satellite={satellite}
               noAnimate={noAnimate}
               fetchInterval={fetchInterval}
+              follow={isIssRoute && !noAnimate}
+              tick={issTick}
             />
           ))}
       </MapContainer>
