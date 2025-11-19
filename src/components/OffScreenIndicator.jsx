@@ -2,6 +2,29 @@ import React, { useEffect, useState } from "react";
 import { useMap } from "react-leaflet";
 import { calculateBearing, calculateDistance } from "../coordinates";
 
+const getBearingLabel = (bearing) => {
+  const directions = [
+    "N",
+    "NNE",
+    "NE",
+    "ENE",
+    "E",
+    "ESE",
+    "SE",
+    "SSE",
+    "S",
+    "SSW",
+    "SW",
+    "WSW",
+    "W",
+    "WNW",
+    "NW",
+    "NNW",
+  ];
+  const index = Math.round(bearing / 22.5) % 16;
+  return `${Math.round(bearing)}° ${directions[index]}`;
+};
+
 const OffScreenIndicator = ({ targetLat, targetLng }) => {
   const map = useMap();
   const [position, setPosition] = useState(null);
@@ -143,8 +166,12 @@ const OffScreenIndicator = ({ targetLat, targetLng }) => {
         {/* Text path for distance around the circle */}
         <defs>
           <path
-            id="text-path-indicator"
+            id="text-path-indicator-top"
             d="M 13,35 a 22.5,22.5 0 1,1 45,0 a 22.5,22.5 0 1,1 -45,0"
+          />
+          <path
+            id="text-path-indicator-bottom"
+            d="M 8.5,38.5 a 26,26 0 0,0 57.gs5,0"
           />
         </defs>
         <text
@@ -153,8 +180,22 @@ const OffScreenIndicator = ({ targetLat, targetLng }) => {
           fill="black"
           fontWeight="700"
         >
-          <textPath href="#text-path-indicator">
+          <textPath href="#text-path-indicator-top">
             {Math.round(distance).toLocaleString()} KM
+          </textPath>
+        </text>
+        <text
+          fontFamily="monospace"
+          fontSize="12"
+          fill="black"
+          fontWeight="700"
+        >
+          <textPath
+            href="#text-path-indicator-bottom"
+            startOffset="50%"
+            textAnchor="middle"
+          >
+            {getBearingLabel(angle)}
           </textPath>
         </text>
         {/* White arrow pointing up (rotated to point toward ISS) */}
