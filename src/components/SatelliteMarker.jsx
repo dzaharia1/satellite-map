@@ -28,6 +28,7 @@ const SatelliteMarker = ({
   noAnimate,
   fetchInterval,
   onPositionUpdate,
+  onRotationUpdate,
 }) => {
   const [currentPos, setCurrentPos] = useState([
     satellite.satlat,
@@ -93,6 +94,7 @@ const SatelliteMarker = ({
 
               setCurrentPos([lat, lng]);
               if (onPositionUpdate) onPositionUpdate([lat, lng]);
+              if (onRotationUpdate) onRotationUpdate(angle);
 
               if (progress < 1) {
                 animationFrameId.current = requestAnimationFrame(animationLoop);

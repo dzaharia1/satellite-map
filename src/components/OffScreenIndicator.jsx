@@ -25,7 +25,7 @@ const getBearingLabel = (bearing) => {
   return `${Math.round(bearing)}° ${directions[index]}`;
 };
 
-const OffScreenIndicator = ({ targetLat, targetLng }) => {
+const OffScreenIndicator = ({ targetLat, targetLng, targetHeading = 0 }) => {
   const map = useMap();
   const [position, setPosition] = useState(null);
   const [angle, setAngle] = useState(0);
@@ -198,11 +198,19 @@ const OffScreenIndicator = ({ targetLat, targetLng }) => {
             {getBearingLabel(angle)}
           </textPath>
         </text>
-        {/* White arrow pointing up (rotated to point toward ISS) */}
+        {/* Bearing Arrow (outlined) */}
+        <path
+          d="M 36,18 L 32,28 L 40,28 Z"
+          fill="none"
+          stroke="white"
+          strokeWidth="2"
+          transform={`rotate(${angle} 36 36)`}
+        />
+        {/* Heading Arrow (solid white) */}
         <path
           d="M 36,18 L 32,28 L 40,28 Z"
           fill="white"
-          transform={`rotate(${angle} 36 36)`}
+          transform={`rotate(${targetHeading} 36 36)`}
         />
       </svg>
     </div>

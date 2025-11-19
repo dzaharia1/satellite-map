@@ -36,6 +36,7 @@ const ISSPage = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [issData, setIssData] = useState(null);
   const [issPosition, setIssPosition] = useState(null); // [lat, lng]
+  const [issHeading, setIssHeading] = useState(0);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -179,6 +180,7 @@ const ISSPage = () => {
           satellite={issData}
           fetchInterval={2 * 60 * 1000}
           onPositionUpdate={setIssPosition}
+          onRotationUpdate={setIssHeading}
           noAnimate={noAnimate}
         />
 
@@ -187,6 +189,7 @@ const ISSPage = () => {
           <OffScreenIndicator
             targetLat={issPosition[0]}
             targetLng={issPosition[1]}
+            targetHeading={issHeading}
           />
         )}
       </MapContainer>
