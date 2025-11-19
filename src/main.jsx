@@ -23,6 +23,10 @@ const router = createBrowserRouter([
     element: <ISSPage />,
   },
   {
+    path: "/iss/:coordinates",
+    element: <ISSPage />,
+  },
+  {
     path: "/*",
     element: <App />,
   },

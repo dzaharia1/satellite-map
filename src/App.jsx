@@ -20,10 +20,10 @@ const apiUrl = import.meta.env.VITE_API_URL;
 function App() {
   const location = useLocation();
   const pathname = location.pathname;
-  
+
   // Check if the current path ends with "no-animate"
   const noAnimate = pathname.endsWith("/no-animate");
-  
+
   // Extract coordinates from pathname
   let coordinates = null;
   if (pathname !== "/" && pathname !== "/no-animate") {
@@ -35,13 +35,15 @@ function App() {
       coordinates = pathname.substring(1);
     }
   }
-  
+
   // Decode URL-encoded coordinates
-  const decodedCoordinates = coordinates ? decodeURIComponent(coordinates) : null;
-  
+  const decodedCoordinates = coordinates
+    ? decodeURIComponent(coordinates)
+    : null;
+
   // Use coordinates from URL if available, otherwise use default
   const dms = decodedCoordinates || `40°38'57.3"N 73°53'42.8"W`;
-  
+
   // uncomment to debug
   // console.log("Pathname:", pathname);
   // console.log("Raw coordinates:", coordinates);
@@ -70,15 +72,23 @@ function App() {
       console.log("Fetching new data");
       setSatellites([]);
       setLastFetchTime(Date.now()); // Update the last fetch time
-      fetch(`${apiUrl}/satellites-above?dms=${encodeURIComponent(dms)}&radius=${radius}`)
+      fetch(
+        `${apiUrl}/satellites-above?dms=${encodeURIComponent(
+          dms
+        )}&radius=${radius}`
+      )
         .then((response) => response.json())
         .then((data) => {
           setSatellites(data.above);
-          console.log(`Fetch returned ${data.above.length} sats.\nUsed ${data.info.transactionscount} / 100 available transactions for /above`);
+          console.log(
+            `Fetch returned ${data.above.length} sats.\nUsed ${data.info.transactionscount} / 100 available transactions for /above`
+          );
         })
-        .catch((error) => console.error("Error fetching satellite data:", error));
+        .catch((error) =>
+          console.error("Error fetching satellite data:", error)
+        );
     };
-    
+
     try {
       const { latitude, longitude } = convertDmsToDecimal(dms);
       setMapCenter([latitude, longitude]);
@@ -95,21 +105,25 @@ function App() {
       const now = Date.now();
       const timeSinceLastFetch = now - lastFetchTime;
       const timeUntilNextFetch = fetchInterval - timeSinceLastFetch;
-      
+
       if (timeUntilNextFetch <= 0) {
         setCountdownTimer("00:00");
       } else {
         const minutes = Math.floor(timeUntilNextFetch / 60000);
         const seconds = Math.floor((timeUntilNextFetch % 60000) / 1000);
-        setCountdownTimer(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+        setCountdownTimer(
+          `${minutes.toString().padStart(2, "0")}:${seconds
+            .toString()
+            .padStart(2, "0")}`
+        );
       }
-    }
+    };
 
     const countdownIntervalId = setInterval(updateCountdown, 1000);
 
     return () => {
-      clearInterval(intervalId)
-      clearInterval(countdownIntervalId)
+      clearInterval(intervalId);
+      clearInterval(countdownIntervalId);
     };
   }, [dms, lastFetchTime]);
 
@@ -124,7 +138,10 @@ function App() {
       >
         <TileLayer
           url="https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}{r}.png"
-          attribution={!noAnimate && '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &amp; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'}
+          attribution={
+            !noAnimate &&
+            '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &amp; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
+          }
         />
         {satellites &&
           satellites.map((satellite, index) => (

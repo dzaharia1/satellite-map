@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
-import { useLocation } from "react-router-dom";
+import {
+  MapContainer,
+  TileLayer,
+  CircleMarker,
+  Popup,
+  useMap,
+} from "react-leaflet";
+import { useLocation, useParams } from "react-router-dom";
 import SatelliteMarker from "./SatelliteMarker";
 import OffScreenIndicator from "./OffScreenIndicator";
+import { convertDmsToDecimal } from "../coordinates";
 import "leaflet/dist/leaflet.css";
 
 // E-ink styles
@@ -12,7 +19,18 @@ const eInkStyles = `
 // }
 `;
 
+const MapUpdater = ({ center }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.setView(center);
+    }
+  }, [center, map]);
+  return null;
+};
+
 const ISSPage = () => {
+  const { coordinates } = useParams();
   const location = useLocation();
   const noAnimate = location.pathname.endsWith("/no-animate");
   const [userLocation, setUserLocation] = useState(null);
@@ -21,20 +39,53 @@ const ISSPage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Get User Location
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation([position.coords.latitude, position.coords.longitude]);
-      },
-      (err) => {
-        console.error("Error getting location:", err);
-        setError(
-          "Could not get your location. Please enable location services."
-        );
-        // Fallback to default (Null Island) so map renders, but show error
+    // Handle coordinates if provided
+    if (coordinates) {
+      try {
+        const decoded = decodeURIComponent(coordinates);
+        // Try DMS first
+        try {
+          const { latitude, longitude } = convertDmsToDecimal(decoded);
+          setUserLocation([latitude, longitude]);
+        } catch (dmsError) {
+          // Try simple lat,lng
+          const parts = decoded.split(",");
+          if (parts.length === 2) {
+            const lat = parseFloat(parts[0]);
+            const lng = parseFloat(parts[1]);
+            if (!isNaN(lat) && !isNaN(lng)) {
+              setUserLocation([lat, lng]);
+            } else {
+              throw dmsError;
+            }
+          } else {
+            throw dmsError;
+          }
+        }
+      } catch (err) {
+        console.error("Error parsing coordinates:", err);
+        setError("Invalid coordinates provided.");
         setUserLocation([0, 0]);
       }
-    );
+    } else {
+      // Get User Location
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation([
+            position.coords.latitude,
+            position.coords.longitude,
+          ]);
+        },
+        (err) => {
+          console.error("Error getting location:", err);
+          setError(
+            "Could not get your location. Please enable location services."
+          );
+          // Fallback to default (Null Island) so map renders, but show error
+          setUserLocation([0, 0]);
+        }
+      );
+    }
 
     // Fetch initial ISS data
     const fetchISS = async () => {
@@ -62,7 +113,7 @@ const ISSPage = () => {
     };
 
     fetchISS();
-  }, []);
+  }, [coordinates]);
 
   if (error && !userLocation) {
     return (
@@ -105,6 +156,7 @@ const ISSPage = () => {
         style={{ height: "100vh", width: "100%" }}
         zoomControl={!noAnimate}
       >
+        <MapUpdater center={userLocation} />
         <TileLayer
           url="https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}{r}.png"
           attribution={
