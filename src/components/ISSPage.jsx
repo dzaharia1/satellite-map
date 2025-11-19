@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import { useLocation } from "react-router-dom";
 import SatelliteMarker from "./SatelliteMarker";
 import OffScreenIndicator from "./OffScreenIndicator";
 import "leaflet/dist/leaflet.css";
@@ -12,6 +13,8 @@ const eInkStyles = `
 `;
 
 const ISSPage = () => {
+  const location = useLocation();
+  const noAnimate = location.pathname.endsWith("/no-animate");
   const [userLocation, setUserLocation] = useState(null);
   const [issData, setIssData] = useState(null);
   const [issPosition, setIssPosition] = useState(null); // [lat, lng]
@@ -100,10 +103,14 @@ const ISSPage = () => {
         center={userLocation}
         zoom={7}
         style={{ height: "100vh", width: "100%" }}
+        zoomControl={!noAnimate}
       >
         <TileLayer
           url="https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &amp; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
+          attribution={
+            !noAnimate &&
+            '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &amp; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
+          }
         />
 
         {/* User Location Marker */}
@@ -120,6 +127,7 @@ const ISSPage = () => {
           satellite={issData}
           fetchInterval={2 * 60 * 1000}
           onPositionUpdate={setIssPosition}
+          noAnimate={noAnimate}
         />
 
         {/* Off-screen Indicator */}

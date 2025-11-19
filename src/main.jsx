@@ -19,6 +19,10 @@ const router = createBrowserRouter([
     element: <ISSPage />,
   },
   {
+    path: "/iss/no-animate",
+    element: <ISSPage />,
+  },
+  {
     path: "/*",
     element: <App />,
   },

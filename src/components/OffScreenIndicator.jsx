@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useMap } from "react-leaflet";
-import { calculateBearing } from "../coordinates";
+import { calculateBearing, calculateDistance } from "../coordinates";
 
 const OffScreenIndicator = ({ targetLat, targetLng }) => {
   const map = useMap();
   const [position, setPosition] = useState(null);
   const [angle, setAngle] = useState(0);
+  const [distance, setDistance] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -28,6 +29,14 @@ const OffScreenIndicator = ({ targetLat, targetLng }) => {
         targetLng
       );
       setAngle(bearing);
+
+      const dist = calculateDistance(
+        center.lat,
+        center.lng,
+        targetLat,
+        targetLng
+      );
+      setDistance(dist);
 
       // Calculate position on screen edge
       const size = map.getSize();
@@ -109,7 +118,7 @@ const OffScreenIndicator = ({ targetLat, targetLng }) => {
         position: "absolute",
         left: position.x,
         top: position.y,
-        transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+        transform: `translate(-50%, -50%)`,
         zIndex: 1000,
         pointerEvents: "none",
       }}
@@ -131,7 +140,7 @@ const OffScreenIndicator = ({ targetLat, targetLng }) => {
         />
         {/* Inner black circle */}
         <circle cx="36" cy="36" r="19.25" fill="black" />
-        {/* Text path for "ISS" around the circle */}
+        {/* Text path for distance around the circle */}
         <defs>
           <path
             id="text-path-indicator"
@@ -144,10 +153,16 @@ const OffScreenIndicator = ({ targetLat, targetLng }) => {
           fill="black"
           fontWeight="700"
         >
-          <textPath href="#text-path-indicator">ISS</textPath>
+          <textPath href="#text-path-indicator">
+            {Math.round(distance).toLocaleString()} KM
+          </textPath>
         </text>
-        {/* White arrow pointing up (will be rotated by transform) */}
-        <path d="M 36,18 L 32,28 L 40,28 Z" fill="white" />
+        {/* White arrow pointing up (rotated to point toward ISS) */}
+        <path
+          d="M 36,18 L 32,28 L 40,28 Z"
+          fill="white"
+          transform={`rotate(${angle} 36 36)`}
+        />
       </svg>
     </div>
   );
