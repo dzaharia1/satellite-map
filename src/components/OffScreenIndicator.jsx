@@ -171,7 +171,7 @@ const OffScreenIndicator = ({ targetLat, targetLng }) => {
           />
           <path
             id="text-path-indicator-bottom"
-            d="M 8.5,38.5 a 26,26 0 0,0 57.gs5,0"
+            d="M 8.5,38.5 a 26,26 0 0,0 57.5,0"
           />
         </defs>
         <text
