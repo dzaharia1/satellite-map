@@ -3,7 +3,23 @@ import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import App from "./App.jsx";
-import ISSPage from "./components/ISSPage.jsx";
+import SatellitePage from "./components/SatellitePage.jsx";
+import { trackedSatellites } from "./satellites.js";
+
+// /iss, /hubble, ... each with optional /no-animate or /:coordinates
+const satelliteRoutes = Object.entries(trackedSatellites).flatMap(
+  ([slug, satellite]) => [
+    { path: `/${slug}`, element: <SatellitePage satellite={satellite} /> },
+    {
+      path: `/${slug}/no-animate`,
+      element: <SatellitePage satellite={satellite} />,
+    },
+    {
+      path: `/${slug}/:coordinates`,
+      element: <SatellitePage satellite={satellite} />,
+    },
+  ]
+);
 
 const router = createBrowserRouter([
   {
@@ -14,18 +30,7 @@ const router = createBrowserRouter([
     path: "/no-animate",
     element: <App />,
   },
-  {
-    path: "/iss",
-    element: <ISSPage />,
-  },
-  {
-    path: "/iss/no-animate",
-    element: <ISSPage />,
-  },
-  {
-    path: "/iss/:coordinates",
-    element: <ISSPage />,
-  },
+  ...satelliteRoutes,
   {
     path: "/*",
     element: <App />,
