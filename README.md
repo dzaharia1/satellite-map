@@ -29,10 +29,11 @@ These pages show one satellite's live position relative to you, with an
 indicator on the edge of the map pointing toward it (and showing its distance
 and heading) whenever it is off screen.
 
-| Path      | Satellite                   |
-| --------- | --------------------------- |
-| `/iss`    | International Space Station |
-| `/hubble` | Hubble Space Telescope      |
+| Path        | Satellite                   |
+| ----------- | --------------------------- |
+| `/iss`      | International Space Station |
+| `/hubble`   | Hubble Space Telescope      |
+| `/tiangong` | Tiangong space station      |
 
 The map centers on your browser's geolocation. Each path also accepts:
 

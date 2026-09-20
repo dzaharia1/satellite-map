@@ -11,4 +11,10 @@ export const trackedSatellites = {
     satname: "HUBBLE",
     launchDate: "1990-04-24",
   },
+  tiangong: {
+    // Tianhe core module of China's Tiangong space station.
+    satid: 48274,
+    satname: "TIANGONG",
+    launchDate: "2021-04-29",
+  },
 };
