@@ -107,7 +107,7 @@ const SatellitePage = ({ satellite }) => {
     const fetchSatellite = async () => {
       try {
         const response = await fetch(
-          `https://space-api.danmade.app/satellite-positions?satid=${satellite.satid}`
+          `${import.meta.env.VITE_API_URL}/satellite-positions?satid=${satellite.satid}`
         );
         const data = await response.json();
         if (cancelled) return;

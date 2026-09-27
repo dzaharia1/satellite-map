@@ -92,7 +92,7 @@ const ISSPage = () => {
     const fetchISS = async () => {
       try {
         const response = await fetch(
-          `https://space-api.danmade.app/satellite-positions?satid=25544`
+          `${import.meta.env.VITE_API_URL}/satellite-positions?satid=25544`
         );
         const data = await response.json();
         if (data.positions && data.positions.length > 0) {
